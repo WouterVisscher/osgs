@@ -1,0 +1,78 @@
+# Todo find out how the recursion option introduced in mapproxy 1.4 works
+# to see if we can avoid explicitly defining each included file.
+# Note also that the base option merges the referenced files into the 
+# top level yaml dict, it does not act like a simple include.
+# See https://mapproxy.org/docs/1.13.0/configuration.html#base
+base: [base/osgs-osm.yaml, base/owntracks-today.yaml]
+
+services:
+  demo:
+  wms:
+    # only offer WMS 1.1.1
+    versions: ['1.1.1', '1.3.0']
+    # supported SRS for this WMS
+    srs: ['EPSG:4326', 'EPSG:3857']
+    # force the layer extents (BBOX) to be displayed in this SRS
+    bbox_srs: ['EPSG:4326']
+    # limit the supported image formats.
+    image_formats: ['image/jpeg', 'image/png', 'image/gif', 'image/GeoTIFF', 'image/tiff']
+    # return an OGC service exception when one or more sources return errors
+    # or no response at all (e.g. timeout)
+    on_source_errors: raise
+
+    # some WMS clients do not send all required parameters in feature info
+    # requests, MapProxy ignores these errors unless you set strict to true.
+    strict: true
+
+    # list of feature info types the server should offer
+    featureinfo_types: ['text', 'html', 'xml']
+
+    md:
+      # metadata used in capabilities documents
+      title: OSGS Mapproxy
+      abstract: Maps showing how QGIS Server and GeoServer interacts with Mapproxy.
+      online_resource: https://example.org/
+      contact:
+        person: Kartoza
+        position: GIS Manager
+        organization:
+        address:
+        city:
+        postcode:
+        country: Portugal
+        phone:
+        email:
+      access_constraints:
+        Includes data from OpenStreetMap which is Copyright OpenStreetMap Contributors. https://osm.org.
+      fees: 'None'
+  tms:
+    use_grid_names: true
+
+#layers:
+  # Make sure to use the old layer syntax in your base files
+  # the older syntax is deprecated but needed for base merging
+  # See https://github.com/mapproxy/mapproxy/issues/490
+  # e.g. syntax:
+  #OSGS-OSM:
+  #  title: OSGS-OSM
+  #  sources: [osgs_osm_cache]
+  # New layer syntax
+  #- name: OSGSOSM
+  #  title: OSGSOSM
+  #  sources: [osgs_osm_cache]
+
+grids:
+  osm_grid:
+    base: GLOBAL_MERCATOR
+    srs: 'EPSG:3857'
+    origin: nw 
+
+globals:
+  cache:
+    meta_size: [8, 8]
+    meta_buffer: 200
+    lock_dir: './cache_data/locks'
+    # where to store lockfiles for tile creation
+    tile_lock_dir: './cache_data/tile_locks'
+  http:
+    ssl_no_cert_checks: true
